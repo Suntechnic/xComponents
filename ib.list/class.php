@@ -4,8 +4,17 @@
  * @var $APPLICATION CMain
  * @var $USER CUser
  */
-class XIBList extends \CBitrixComponent
+class XIBList extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Controllerable
 {
+    
+    private $signer;
+    
+    public function getSalt ()
+	{
+        if (defined(XDEFINE_SALT)) return 'x_ib_list_'.XDEFINE_SALT;
+        return 'x_ib_list';
+    }
+    
     public function onPrepareComponentParams($arParams)
 	{
         if(!isset($arParams["CACHE_TIME"])) $arParams["CACHE_TIME"] = 36000000;
@@ -22,80 +31,132 @@ class XIBList extends \CBitrixComponent
             if (!in_array('IBLOCK_ID',$arParams["SELECT"])) $arParams["SELECT"][] = 'IBLOCK_ID';
         }
         
-        if (!is_array($arParams["FILTER"])) $arParams["FILTER"] = [];
+        if (!is_array($arParams['FILTER'])) $arParams['FILTER'] = [];
+        if (!is_array($arParams['FILTERS'])) $arParams['FILTERS'] = [];
         
         if (!is_array($arParams["SORT"])) $arParams["SORT"] = ['ID'=>'ASC'];
         
-        $arParams["ELEMENTS_COUNT"] = intval($arParams["ELEMENTS_COUNT"]);
-        if($arParams["ELEMENTS_COUNT"]<=0) $arParams["ELEMENTS_COUNT"] = 20;
+        $arParams['ELEMENTS_COUNT'] = intval($arParams['ELEMENTS_COUNT']);
+        if($arParams['ELEMENTS_COUNT']<=0) $arParams['ELEMENTS_COUNT'] = 20;
         
-        if (!is_array($arParams['KEYS_CACHED'])) $arParams['KEYS_CACHED'] = array(
-                "NAV_CACHED_DATA"
-            );
+        //if (!is_array($arParams['KEYS_CACHED'])) $arParams['KEYS_CACHED'] = array(
+        //        "NAV_CACHED_DATA"
+        //    );
         
+        if (!$arParams['UID']) $arParams['UID'] = 'c_'.md5('x:ib.list '.$templateName);
         
-        
-        $arParams["CHECK_PERMISSIONS"] = $arParams["CHECK_PERMISSIONS"]!="N";
-        
-        if($arParams["PAGER"] == 'Y') {
-            $arNavParams = array(
-                "nPageSize" => $arParams["ELEMENTS_COUNT"],
-                "bDescPageNumbering" => 'N',
-                "bShowAll" => $arParams["PAGER_SHOW_ALL"],
-            );
-            $arNavigation = CDBResult::GetNavParams($arNavParams);
-        } else {
-            $arNavParams = array(
-                "nTopCount" => $arParams["ELEMENTS_COUNT"],
-                "bDescPageNumbering" => 'N',
-            );
-            $arNavigation = false;
-        }
-                
         return $arParams;
     }
     
-    public function executeComponent()
-	{
-		//global $APPLICATION;
-		//
-		//$this->setFrameMode(false);
-		//$this->context = Main\Application::getInstance()->getContext();
-		//$this->checkSession = $this->arParams["DELIVERY_NO_SESSION"] == "N" || check_bitrix_sessid();
-		//$this->isRequestViaAjax = $this->request->isPost() && $this->request->get('via_ajax') == 'Y';
-		//$isAjaxRequest = $this->request["is_ajax_post"] == "Y";
-		//
-		//if ($isAjaxRequest)
-		//	$APPLICATION->RestartBuffer();
-		//
-		//$this->action = $this->prepareAction();
-		//Sale\Compatible\DiscountCompatibility::stopUsageCompatible();
-		//$this->doAction($this->action);
-		//Sale\Compatible\DiscountCompatibility::revertUsageCompatible();
-		//
-		//if (!$isAjaxRequest)
-		//{
-		//	CJSCore::Init(['fx', 'popup', 'window', 'ajax', 'date']);
-		//}
-		//
-		////is included in all cases for old template
-		//$this->includeComponentTemplate();
-		//
-		//if ($isAjaxRequest)
-		//{
-		//	$APPLICATION->FinalActions();
-		//	die();
-		//}
+    private function initSigner ()
+    {
+        $this->signer = new \Bitrix\Main\Security\Sign\Signer;
+    }
+    
+    public function signVal ($val)
+    {
+        if (!$this->signer) $this->initSigner();
+        $signer = new \Bitrix\Main\Security\Sign\Signer;
+        return $signer->sign(base64_encode(serialize($val)),$this->getSalt());
+    }
+    
+    
+    public function extractValFromSignedVal ($signedVal)
+    {
+        $debrisSignedVal = explode('.',$signedVal);
+        if (!$this->signer) $this->initSigner();
+        if ($this->signer->validate($debrisSignedVal[0], $debrisSignedVal[1], $this->getSalt())) {
+            return unserialize(base64_decode($debrisSignedVal[0]));
+        } else {
+            return null;
+        }
         
-        $pagerParameters = array();
-
+    }
+    
+    public function executeAction (
+            $signedParams, // подписанные параметры
+            $signedParamsMutation=false, // подписанные массив мутаций параметров (каждый ключ заменит аналогичный в Params)
+            $signedTemplate // подписанный шаблон
+        )
+	{
+        $arParams = $this->extractValFromSignedVal($signedParams);
+        if ($arParams == null) die('not params'); 
+        if ($signedParamsMutation) {
+            $arParamsMutation = $this->extractValFromSignedVal($signedParamsMutation);
+            if ($arParamsMutation != null) {
+                foreach ($arParamsMutation as $key=>$val) {
+                    $arParams[$key] = $val;
+                }
+            } else {
+                die();
+            }
+        }
+        $template = $this->extractValFromSignedVal($signedTemplate);
+        if ($template != null) {
+            $this->arParams = $arParams;
+            $this->setTemplateName($template);
+            
+            $this->executeComponent();
+            die();
+        } else {
+            die('not template');
+        }
+    }
+    
+    public function configureActions ()
+	{
+		return [
+			'execute' => [
+				'prefilters' => [],
+				'postfilters' => []
+			]
+		];
+	}
+    
+    // возвращает фильтр компонента применив к нему дополнительные фильтры из $arFilters
+    public function getFilter ($arFilters=[])
+	{
+        $arFilter = $this->arParams['FILTER'];
+        foreach ($arFilters as $additionalFilter) {
+            if (is_array($additionalFilter)) {
+                $arFilter = array_merge($arFilter,$additionalFilter);
+            }
+        }
+        
+        if ($this->arParams['IBLOCK_ID']) $arFilter["IBLOCK_ID"] = $this->arParams["IBLOCK_ID"];
+        if ($this->arParams['SECTION_ID']) $arFilter['SECTION_ID'] = $this->arParams['SECTION_ID'];
+        
+        return $arFilter;
+    }
+    
+    
+    public function executeComponent ()
+	{
+        
+        \CPageOption::SetOptionString('main', 'nav_page_in_session', 'N');
+        
+        if(is_array($this->arParams['PAGER'])) {
+            $arNavParams = array(
+                    'nPageSize' => $this->arParams['ELEMENTS_COUNT'],
+                    'bDescPageNumbering' => false,
+                    'bShowAll' => $this->arParams['PAGER']['SHOW_ALL'],
+                );
+            if ($this->arParams['PAGER']['PAGE']) {
+                $arNavParams['iNumPage'] = $this->arParams['PAGER']['PAGE'];
+            }
+            $arNavigation = \CDBResult::GetNavParams($arNavParams);
+        } else {
+            $arNavParams = array(
+                    'nTopCount' => $this->arParams['ELEMENTS_COUNT'],
+                    'bDescPageNumbering' => false,
+                );
+            $arNavigation = false;
+        }
+    
+        
         if($this->startResultCache(
                 false,
-                array(
-                        $arNavigation,
-                        $arrFilter,
-                        $pagerParameters
-                    )
+                array($arNavigation)
             )) {
             
             if(!\Bitrix\Main\Loader::includeModule('iblock')) {
@@ -104,70 +165,66 @@ class XIBList extends \CBitrixComponent
                 return;
             }
             
-        
-            $rsIBlock = CIBlock::GetList(array(), array(
-                    "ACTIVE" => "Y",
-                    "ID" => $this->arParams["IBLOCK_ID"],
-                ));
-        
-        
-            $this->arResult = $rsIBlock->GetNext();
-            if (!$this->arResult) {
-                $this->abortResultCache();
-                return;
+            
+            if ($this->arParams['IBLOCK_ID']) {
+                $rsIBlock = \CIBlock::GetList(array(), array(
+                        "ACTIVE" => "Y",
+                        "ID" => $this->arParams["IBLOCK_ID"],
+                    ));
+                $this->arResult['IBLOCK'] = $rsIBlock->GetNext();
+            }
+            
+            
+            if ($this->arParams['SECTION_ID']) {
+                //TODO: добавить получение данных о разделе
+                $this->arResult['SECTION'] = 'не реализовано';
             }
             
             //SELECT
-            $arSelect = $this->arParams["SELECT"];
+            $arSelect = $this->arParams['SELECT'];
         
-            //WHERE
-            $arFilter = $this->arParams["FILTER"];
-            $arFilter["IBLOCK_ID"] = $this->arParams["IBLOCK_ID"];
-        
+            // получаем фильтр с учетом дополнительных фильтров
+            $this->arResult['FILTER'] = $this->getFilter($this->arParams['FILTERS']);
+            
             //ORDER BY
-            $arSort = $this->arParams["SORT"];
-        
-            $this->arResult["ITEMS"] = array();
-            $this->arResult["ELEMENTS"] = array();
-            $rsElement = CIBlockElement::GetList($arSort, $arFilter, false, $arNavParams, $arSelect);
-            while ($arItem = $rsElement->GetNext()) {
-                
-                //$ipropValues = new Iblock\InheritedProperty\ElementValues($arItem["IBLOCK_ID"], $arItem["ID"]);
-                //$arItem["IPROPERTY_VALUES"] = $ipropValues->getValues();
-                
-                if (count($this->arParams['KEYS_GETFILE'])) {
-                    \Bitrix\Iblock\Component\Tools::getFieldImageData(
-                            $arItem,
-                            $this->arParams['KEYS_GETFILE'],
-                            \Bitrix\Iblock\Component\Tools::IPROPERTY_ENTITY_ELEMENT
-                        );
-                }
-                
-                
-                
-                $this->arResult["ITEMS"][] = $arItem;
-            }
-            unset($arItem);
-        
-            $navComponentParameters = array();
-        
-            $this->arResult["NAV_STRING"] = $rsElement->GetPageNavStringEx(
-                    $navComponentObject,
-                    $this->arParams["PAGER_TITLE"],
-                    $this->arParams["PAGER_TEMPLATE"],
-                    $this->arParams["PAGER_SHOW_ALWAYS"],
-                    $this,
-                    $navComponentParameters
+            $arSort = $this->arParams['SORT'];
+            
+            $this->arResult['ITEMS'] = [];
+            
+            $rsElement = \CIBlockElement::GetList(
+                    $arSort,
+                    $this->arResult['FILTER'],
+                    false,
+                    $arNavParams,
+                    $arSelect
                 );
             
+            while ($arItem = $rsElement->GetNext()) {
+                $this->arResult['ITEMS'][] = $arItem;
+            }
+            unset($arItem);
             
-        
+            if (is_array($this->arParams['PAGER'])) {
+                $navComponentParameters = array();
+                
+                $this->arResult['NAV_STRING'] = $rsElement->GetPageNavStringEx(
+                        $navComponentObject,
+                        $this->arParams['PAGER']['TITLE'],
+                        $this->arParams['PAGER']['TEMPLATE'],
+                        $this->arParams['PAGER']['SHOW_ALWAYS'],
+                        $this,
+                        $navComponentParameters
+                    );
+                
+                $this->arResult['NAV_CACHED_DATA'] = null;
+                $this->arResult['NAV_RESULT'] = $rsElement;
+                $this->arResult['NAV_PARAM'] = $navComponentParameters;
+            }
             
-            $this->arResult["NAV_CACHED_DATA"] = null;
-            $this->arResult["NAV_RESULT"] = $rsElement;
-            $this->arResult["NAV_PARAM"] = $navComponentParameters;
-        
-            $this->setResultCacheKeys($this->arParams['KEYS_CACHED']);
+            if (is_array($this->arParams['KEYS_CACHED']) && count($this->arParams['KEYS_CACHED'])) {
+                $this->setResultCacheKeys($this->arParams['KEYS_CACHED']);
+            }
+            
             
             $this->includeComponentTemplate();
         }
