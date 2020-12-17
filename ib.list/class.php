@@ -4,7 +4,7 @@
  * @var $APPLICATION CMain
  * @var $USER CUser
  */
-class XIBList extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Controllerable
+class XCIbList extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Controllerable
 {
     
     private $signer;
@@ -13,6 +13,11 @@ class XIBList extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\
 	{
         if (defined(XDEFINE_SALT)) return 'x_ib_list_'.XDEFINE_SALT;
         return 'x_ib_list';
+    }
+    
+    public function getUid ()
+	{
+        return 'c_'.md5('x:ib.list '.$this->getTemplateName());
     }
     
     public function onPrepareComponentParams($arParams)
@@ -43,7 +48,8 @@ class XIBList extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\
         //        "NAV_CACHED_DATA"
         //    );
         
-        if (!$arParams['UID']) $arParams['UID'] = 'c_'.md5('x:ib.list '.$templateName);
+        
+        if (!$arParams['UID']) $arParams['UID'] = $this->getUid();
         
         return $arParams;
     }
