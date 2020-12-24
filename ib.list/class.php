@@ -187,22 +187,22 @@ class XCIbList extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract
             }
             
             //SELECT
-            $arSelect = $this->arParams['SELECT'];
+            $this->arResult['SELECT'] = $this->arParams['SELECT'];
         
             // получаем фильтр с учетом дополнительных фильтров
             $this->arResult['FILTER'] = $this->getFilter($this->arParams['FILTERS']);
             
             //ORDER BY
-            $arSort = $this->arParams['SORT'];
+            $this->arResult['SORT'] = $this->arParams['SORT'];
             
             $this->arResult['ITEMS'] = [];
             
             $rsElement = \CIBlockElement::GetList(
-                    $arSort,
+                    $this->arResult['SORT'],
                     $this->arResult['FILTER'],
                     false,
                     $arNavParams,
-                    $arSelect
+                    $this->arResult['SELECT']
                 );
             
             while ($arItem = $rsElement->GetNext()) {
