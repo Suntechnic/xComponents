@@ -186,14 +186,16 @@ class XCIbList extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract
                 $this->arResult['SECTION'] = 'не реализовано';
             }
             
-            //SELECT
-            $this->arResult['SELECT'] = $this->arParams['SELECT'];
-        
-            // получаем фильтр с учетом дополнительных фильтров
-            $this->arResult['FILTER'] = $this->getFilter($this->arParams['FILTERS']);
             
             //ORDER BY
             $this->arResult['SORT'] = $this->arParams['SORT'];
+            // получаем фильтр с учетом дополнительных фильтров
+            $this->arResult['FILTER'] = $this->getFilter($this->arParams['FILTERS']);
+            // параметры навигацияя
+            $this->arResult['NAV'] = $arNavParams;
+            //SELECT
+            $this->arResult['SELECT'] = $this->arParams['SELECT'];
+            
             
             $this->arResult['ITEMS'] = [];
             
@@ -201,7 +203,7 @@ class XCIbList extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract
                     $this->arResult['SORT'],
                     $this->arResult['FILTER'],
                     false,
-                    $arNavParams,
+                    $this->arResult['NAV'],
                     $this->arResult['SELECT']
                 );
             
