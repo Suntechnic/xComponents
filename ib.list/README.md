@@ -18,8 +18,7 @@
                             'PREVIEW_PICTURE',
                             'DETAIL_PICTURE'
                         ],
-                    
-                    'KEYS_GETFILE' => ['PREVIEW_PICTURE','DETAIL_PICTURE'],
+                        
                     'KEYS_CACHED' => ['ITEMS','PRELOAD_IMAGES'],
                     
                     'CACHE_TYPE' => 'Y',
