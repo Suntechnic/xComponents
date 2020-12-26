@@ -3,32 +3,42 @@
 
 <?$APPLICATION->IncludeComponent(
             'x:ib.list',
-            'slider',
+            'main',
             Array(
                     'AJAX_MODE' => 'N',
-                    'IBLOCK_ID' => IDIB_SLIDER,
-                    'ELEMENTS_COUNT' => 20,
+                    'ELEMENTS_COUNT' => 1,
                     'SORT' => ['SORT'=>'ASC'],
-                    'FILTER' => [],
+                    'IBLOCK_ID' => IDIB_PROJECTS,
+                    
+                    'FILTER' => [
+                            'IBLOCK_ID' => IDIB_PROJECTS,
+                        ],
                     'SELECT' => [
-                            'PROPERTY_TITLE',
-                            'PROPERTY_TEXT',
-                            'PROPERTY_URL',
-                            'PROPERTY_TMENU',
+                            'NAME',
+                            'TIMESTAMP_X',
+                            'DATE_ACTIVE_FROM',
+                            'DETAIL_PAGE_URL',
                             'PREVIEW_PICTURE',
-                            'DETAIL_PICTURE'
+                            'PROPERTY_YOUTUBE',
+                            'PROPERTY_AUDIO'
                         ],
                         
                     'KEYS_CACHED' => ['ITEMS','PRELOAD_IMAGES'],
                     
                     'CACHE_TYPE' => 'Y',
                     'CACHE_TIME' => 3600,
-                    'PAGER' => 'N',
+                    'CACHE_FILTER' => 'Y',
+                    'CACHE_GROUPS' => 'Y',
                     
-                    'PAGER_TITLE' => '',
-                    'PAGER_SHOW_ALWAYS' => 'N',
-                    'PAGER_TEMPLATE' => '',
-                    'PAGER_SHOW_ALL' => 'Y',
+                    
+                    'PAGER' => [
+                            'TITLE' => '',
+                            'TEMPLATE' => '',
+                            'SHOW_ALWAYS' => 'N',
+                            'SHOW_ALL' => 'N',
+                            'PAGE' => 1,
+                        ],
+                    
                     
                     'AJAX_OPTION_SHADOW' => 'Y',
                     'AJAX_OPTION_JUMP' => 'N',
@@ -37,7 +47,7 @@
                     'AJAX_OPTION_ADDITIONAL' => '',
                     
                     'TEMPLATE' => [
-                        
+                        'SHOW_FILTER' => 'Y'
                     ]
                 )
         );?>
