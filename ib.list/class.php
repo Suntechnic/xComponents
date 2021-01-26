@@ -219,7 +219,7 @@ class XCIbList extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract
                         $navComponentObject,
                         $this->arParams['PAGER']['TITLE'],
                         $this->arParams['PAGER']['TEMPLATE'],
-                        $this->arParams['PAGER']['SHOW_ALWAYS'],
+                        $this->arParams['PAGER']['SHOW_ALWAYS']=='Y'?true:false,
                         $this,
                         $navComponentParameters
                     );
