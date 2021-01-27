@@ -23,9 +23,6 @@ class XCIbList extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract
     public function onPrepareComponentParams($arParams)
 	{
         if(!isset($arParams["CACHE_TIME"])) $arParams["CACHE_TIME"] = 36000000;
-
-        $arParams["IBLOCK_TYPE"] = trim($arParams["IBLOCK_TYPE"]);
-        if($arParams["IBLOCK_TYPE"] == '') $arParams["IBLOCK_TYPE"] = "news";
         
         $arParams["IBLOCK_ID"] = trim($arParams["IBLOCK_ID"]);
         
