@@ -25,7 +25,7 @@
                         
                     'KEYS_CACHED' => ['ITEMS','PRELOAD_IMAGES'],
                     
-                    'CACHE_TYPE' => 'Y',
+                    'CACHE_TYPE' => APPLICATION_ENV=='dev'?'N':'A',
                     'CACHE_TIME' => 3600,
                     'CACHE_FILTER' => 'Y',
                     'CACHE_GROUPS' => 'Y',
