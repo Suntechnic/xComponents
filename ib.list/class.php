@@ -39,7 +39,10 @@ class XCIbList extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract
         if (!is_array($arParams["SORT"])) $arParams["SORT"] = ['ID'=>'ASC'];
         
         $arParams['ELEMENTS_COUNT'] = intval($arParams['ELEMENTS_COUNT']);
-        if($arParams['ELEMENTS_COUNT']<=0) $arParams['ELEMENTS_COUNT'] = 20;
+        if($arParams['ELEMENTS_COUNT'] <= 0) {
+            $arParams['ELEMENTS_COUNT'] = 0;
+            if ($arParams['PAGER']) $arParams['ELEMENTS_COUNT'] = 20;
+        }
         
         //if (!is_array($arParams['KEYS_CACHED'])) $arParams['KEYS_CACHED'] = array(
         //        "NAV_CACHED_DATA"
@@ -151,6 +154,8 @@ class XCIbList extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract
         
         \CPageOption::SetOptionString('main', 'nav_page_in_session', 'N');
         
+        
+        $arNavParams = false;
         if(is_array($this->arParams['PAGER'])) {
             $arNavParams = array(
                     'nPageSize' => $this->arParams['ELEMENTS_COUNT'],
@@ -162,7 +167,7 @@ class XCIbList extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract
             }
             $arNavigation = \CDBResult::GetNavParams($arNavParams);
         } else {
-            $arNavParams = array(
+            if ($this->arParams['ELEMENTS_COUNT']) $arNavParams = array(
                     'nTopCount' => $this->arParams['ELEMENTS_COUNT'],
                     'bDescPageNumbering' => false,
                 );
