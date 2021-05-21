@@ -1,6 +1,6 @@
 Типичный вызов
 
-
+```
 <?$APPLICATION->IncludeComponent(
             'x:ib.list',
             'main',
@@ -51,6 +51,71 @@
                     ]
                 )
         );?>
+```
 
 
+Ajax вызов:
 
+execute принимает три праметра:
+signedParams: подписанный набор параметров
+signedTemplate: подписанный шаблон в котором необходимо отрендерить компонента
+signedParamsMutation: подписанная мутация для параметров - diff между дефолтными параметрами и например дополнительным фильтром
+Все значения из Params будут заменены на значения из ParamsMutation (не рекурсивно)
+
+```
+$arParamsClined = $component->getParams(); // получаем очищенные от ~ параметры, для сокращения объёма передачи данных
+<script>
+    var APP = APP || {};
+    APP.Components = APP.Components || {};
+    
+    // используем UID для изоляции параметров
+    APP.Components.<?=$arParamsClined['UID']?> = APP.Components.<?=$arParamsClined['UID']?> || {
+        signedParams:  '<?=$component->signVal($arParamsClined)?>',
+        signedTemplate: '<?=$component->signVal($templateName)?>',
+        
+        idContainer: 'container_<?=$arParamsClined['UID']?>',
+        
+        cache: {},
+        
+        go: function (title,url,signedParamsMutation) {
+            if (this.cache[signedParamsMutation]) {
+                this.update(this.cache[signedParamsMutation])
+            } else {
+                APP.Components.<?=$arParamsClined['UID']?>.ajaxUpdate(
+                        signedParamsMutation
+                    );
+            }
+            document.title = title;
+            history.pushState('', title, url)
+        },
+        
+        update: function (content) {
+            $('#'+APP.Components.<?=$arParamsClined['UID']?>.idContainer).replaceWith(content);
+        },
+        
+        ajaxUpdate: function (signedParamsMutation, elm) {
+            var query = {
+                    c: 'x:ib.list',
+                    action: 'execute',
+                    mode: 'class'
+                };
+            var request = $.ajax({
+                    url: '/bitrix/services/main/ajax.php?' + $.param(query, true),
+                    method: 'POST',
+                    data: {
+                        signedParams: APP.Components.<?=$arParamsClined['UID']?>.signedParams,
+                        signedTemplate: APP.Components.<?=$arParamsClined['UID']?>.signedTemplate,
+                        signedParamsMutation: signedParamsMutation
+                    }
+                });
+            var self = this;
+            request.done(function (response) {
+                    self.cache[signedParamsMutation] = response
+                    self.update(response)
+                    //AOS.refreshHard();
+                });
+        }
+    }
+</script>
+
+```

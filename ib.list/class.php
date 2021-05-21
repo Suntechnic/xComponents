@@ -86,7 +86,8 @@ class XCIbList extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract
         )
 	{
         $arParams = $this->extractValFromSignedVal($signedParams);
-        if ($arParams == null) die('not params'); 
+        if ($arParams == null) die('not params');
+        
         if ($signedParamsMutation) {
             $arParamsMutation = $this->extractValFromSignedVal($signedParamsMutation);
             if ($arParamsMutation != null) {
@@ -97,6 +98,7 @@ class XCIbList extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract
                 die();
             }
         }
+        
         $template = $this->extractValFromSignedVal($signedTemplate);
         if ($template != null) {
             $this->arParams = $arParams;
