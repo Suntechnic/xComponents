@@ -21,6 +21,10 @@ class XCJsApp extends XC
         $dctConfig = $this->arParams['CONFIG'];
         if (!isset($dctConfig['lang'])) $dctConfig['lang'] = LANGUAGE_ID;
         if (!isset($dctConfig['env']) && defined('APPLICATION_ENV')) $dctConfig['env'] = APPLICATION_ENV;
+        if (!isset($dctConfig['cookie_name'])) {
+            $dctConfig['cookie_name'] = \Bitrix\Main\Config\Option::get('main', 'cookie_name', 'BITRIX_SM');
+        }
+        
         $this->arResult['CONFIG'] = $dctConfig;
         
         $this->includeComponentTemplate();
