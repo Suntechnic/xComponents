@@ -25,7 +25,7 @@ APP.env = {
 
 APP.Util = {
     
-    setCooke: function (name, value, options = {}) {
+    setCookie: function (name, value, options = {}) {
         //setCookie('user', 'John', {secure: true, 'max-age': 3600});
         if ('undefined' != typeof APP.config.cookie_name && APP.config.cookie_name) name =  + '_' + name;
         
