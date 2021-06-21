@@ -25,6 +25,31 @@ APP.env = {
 
 APP.Util = {
     
+    setCooke: function (name, value, options = {}) {
+        //setCookie('user', 'John', {secure: true, 'max-age': 3600});
+        if ('undefined' != typeof APP.config.cookie_name && APP.config.cookie_name) name =  + '_' + name;
+        
+        options = Object.assign({
+                path: '/'
+            }, options || {});
+        
+        if (options.expires instanceof Date) {
+            options.expires = options.expires.toUTCString();
+        }
+        
+        let updatedCookie = encodeURIComponent(name) + "=" + encodeURIComponent(value);
+        
+        for (let optionKey in options) {
+            updatedCookie += "; " + optionKey;
+            let optionValue = options[optionKey];
+            if (optionValue !== true) {
+              updatedCookie += "=" + optionValue;
+            }
+        }
+        
+        document.cookie = updatedCookie;
+    },
+    
     submitForm: function (form, callback) {
         let url = form.getAttribute('action');
 		let formData = new FormData(form);
