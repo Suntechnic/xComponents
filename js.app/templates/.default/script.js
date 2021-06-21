@@ -27,7 +27,9 @@ APP.Util = {
     
     setCookie: function (name, value, options = {}) {
         //setCookie('user', 'John', {secure: true, 'max-age': 3600});
-        if ('undefined' != typeof APP.config.cookie_name && APP.config.cookie_name) name =  + '_' + name;
+        if ('undefined' != typeof APP.config.cookie_name
+                && APP.config.cookie_name
+            ) name = APP.config.cookie_name + '_' + name;
         
         options = Object.assign({
                 path: '/'
