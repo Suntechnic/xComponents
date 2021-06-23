@@ -124,14 +124,14 @@ class XCIbList extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract
     // возвращает параметры компонента очищенные от исходных значений (с ~)
     public function getParams ()
 	{
-        if (!$this->_arParams_final) {
-            $this->_arParams_final = [];
+        if (!$this->_arParams_clined) {
+            $this->_arParams_clined = [];
             foreach ($this->arParams as $key=>$val) {
                 if ('~' == substr($key,0,1)) continue;
-                $this->_arParams_final[$key] = $val;
+                $this->_arParams_clined[$key] = $val;
             }
         }
-        return $this->_arParams_final;
+        return $this->_arParams_clined;
     }
     
     // возвращает фильтр компонента применив к нему дополнительные фильтры из $arFilters

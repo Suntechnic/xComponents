@@ -13,6 +13,9 @@
                     'FILTER' => [
                             'IBLOCK_ID' => IDIB_PROJECTS,
                         ],
+                    'FILTERS' => [
+                        'TAGS' => ['PROPERTY_TAGS' => 'слово'],
+                    ],
                     'SELECT' => [
                             'NAME',
                             'TIMESTAMP_X',
