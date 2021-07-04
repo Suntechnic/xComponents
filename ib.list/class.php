@@ -1,28 +1,19 @@
 <?if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true) die();
 
+\CBitrixComponent::includeComponentClass("x:x");
+
 /**
  * @var $APPLICATION CMain
  * @var $USER CUser
  */
-class XCIbList extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Controllerable
+class XCIbList extends XC
 {
     
     private $signer;
     
-    public function getSalt ()
+    public function onPrepareComponentParams(&$arParams)
 	{
-        if (defined(XDEFINE_SALT)) return 'x_ib_list_'.XDEFINE_SALT;
-        return 'x_ib_list';
-    }
-    
-    public function getUid ()
-	{
-        return 'c_'.md5('x:ib.list '.$this->getTemplateName());
-    }
-    
-    public function onPrepareComponentParams($arParams)
-	{
-        if(!isset($arParams["CACHE_TIME"])) $arParams["CACHE_TIME"] = 36000000;
+        $arParams = parent::onPrepareComponentParams($arParams);
         
         $arParams["IBLOCK_ID"] = trim($arParams["IBLOCK_ID"]);
         
@@ -48,90 +39,7 @@ class XCIbList extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract
         //        "NAV_CACHED_DATA"
         //    );
         
-        
-        if (!$arParams['UID']) $arParams['UID'] = $this->getUid();
-        
         return $arParams;
-    }
-    
-    private function initSigner ()
-    {
-        $this->signer = new \Bitrix\Main\Security\Sign\Signer;
-    }
-    
-    public function signVal ($val)
-    {
-        if (!$this->signer) $this->initSigner();
-        $signer = new \Bitrix\Main\Security\Sign\Signer;
-        return $signer->sign(base64_encode(serialize($val)),$this->getSalt());
-    }
-    
-    
-    public function extractValFromSignedVal ($signedVal)
-    {
-        $debrisSignedVal = explode('.',$signedVal);
-        if (!$this->signer) $this->initSigner();
-        if ($this->signer->validate($debrisSignedVal[0], $debrisSignedVal[1], $this->getSalt())) {
-            return unserialize(base64_decode($debrisSignedVal[0]));
-        } else {
-            return null;
-        }
-        
-    }
-    
-    public function executeAction (
-            $signedParams, // подписанные параметры
-            $signedParamsMutation=false, // подписанные массив мутаций параметров (каждый ключ заменит аналогичный в Params)
-            $signedTemplate // подписанный шаблон
-        )
-	{
-        $arParams = $this->extractValFromSignedVal($signedParams);
-        if ($arParams == null) die('not params');
-        
-        if ($signedParamsMutation) {
-            $arParamsMutation = $this->extractValFromSignedVal($signedParamsMutation);
-            if ($arParamsMutation != null) {
-                foreach ($arParamsMutation as $key=>$val) {
-                    $arParams[$key] = $val;
-                }
-            } else {
-                die();
-            }
-        }
-        
-        $template = $this->extractValFromSignedVal($signedTemplate);
-        if ($template != null) {
-            $this->arParams = $arParams;
-            $this->setTemplateName($template);
-            
-            $this->executeComponent();
-            die();
-        } else {
-            die('not template');
-        }
-    }
-    
-    public function configureActions ()
-	{
-		return [
-			'execute' => [
-				'prefilters' => [],
-				'postfilters' => []
-			]
-		];
-	}
-    
-    // возвращает параметры компонента очищенные от исходных значений (с ~)
-    public function getParams ()
-	{
-        if (!$this->_arParams_clined) {
-            $this->_arParams_clined = [];
-            foreach ($this->arParams as $key=>$val) {
-                if ('~' == substr($key,0,1)) continue;
-                $this->_arParams_clined[$key] = $val;
-            }
-        }
-        return $this->_arParams_clined;
     }
     
     // возвращает фильтр компонента применив к нему дополнительные фильтры из $arFilters
@@ -249,7 +157,6 @@ class XCIbList extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract
             if (is_array($this->arParams['KEYS_CACHED']) && count($this->arParams['KEYS_CACHED'])) {
                 $this->setResultCacheKeys($this->arParams['KEYS_CACHED']);
             }
-            
             
             $this->includeComponentTemplate();
         }

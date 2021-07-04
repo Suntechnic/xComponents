@@ -9,6 +9,9 @@ class XC extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Contr
     
     private $signer;
     
+    /*
+     * Возвращает соль для signer'а
+    */
     public function getSalt ()
 	{
         $strName = str_replace([':','.'],'_',$this->__name);
@@ -16,23 +19,39 @@ class XC extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Contr
         return $strName;
     }
     
+    /*
+     * Возвращает UID компонента
+     * пока не уникально на основе имени и шаблона
+    */
     public function getUid ()
 	{
         return 'c_'.md5($this->__name.'-'.$this->getTemplateName());
     }
     
+    /*
+     * Подготавливает параметры компонента добавляя обязательные недостающие
+     * 
+    */
     public function onPrepareComponentParams(&$arParams)
 	{
         if(!isset($arParams["CACHE_TIME"])) $arParams["CACHE_TIME"] = 36000000;
         if (!$arParams['UID']) $arParams['UID'] = $this->getUid();
+        if (!$arParams['LANGUAGE_ID']) $arParams['LANGUAGE_ID'] = LANGUAGE_ID;
+        //if (!$arParams['SITE_ID']) $arParams['SITE_ID'] = SITE_ID;
         return $arParams;
     }
     
+    /*
+     * иницицализирует signer
+    */
     private function initSigner ()
     {
         $this->signer = new \Bitrix\Main\Security\Sign\Signer;
     }
     
+    /*
+     * Подписывает переданный параметр - необходимо в шаблоне для формирования запросов
+    */
     public function signVal ($val)
     {
         if (!$this->signer) $this->initSigner();
@@ -40,7 +59,10 @@ class XC extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Contr
         return $signer->sign(base64_encode(serialize($val)),$this->getSalt());
     }
     
-    
+    /*
+    * Воставнавливает подписанное значение
+    * 
+    */
     public function extractValFromSignedVal ($signedVal)
     {
         $debrisSignedVal = explode('.',$signedVal);
@@ -53,18 +75,25 @@ class XC extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Contr
         
     }
     
+    /*
+    * Выполняется компонент при ajax запросе
+    * 
+    */
     public function executeAction (
             $signedParams, // подписанные параметры
             $signedParamsMutation=false, // подписанные массив мутаций параметров (каждый ключ заменит аналогичный в Params)
             $signedTemplate // подписанный шаблон
         )
 	{
+        // востанавливает параметры
         $arParams = $this->extractValFromSignedVal($signedParams);
         if ($arParams == null) die('not params');
         
-        if ($signedParamsMutation) {
+        if ($signedParamsMutation) { // если имеется патч параметров
+            // востанавливает его
             $arParamsMutation = $this->extractValFromSignedVal($signedParamsMutation);
             if ($arParamsMutation != null) {
+                // и применяет к массив праметров
                 foreach ($arParamsMutation as $key=>$val) {
                     $arParams[$key] = $val;
                 }
@@ -73,7 +102,10 @@ class XC extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Contr
             }
         }
         
+        // востанавливает шаблон
         $template = $this->extractValFromSignedVal($signedTemplate);
+        
+        // выполняем компонент
         if ($template != null) {
             $this->arParams = $arParams;
             $this->setTemplateName($template);
@@ -85,6 +117,7 @@ class XC extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Contr
         }
     }
     
+    // конфигурация выполняения по ajax
     public function configureActions ()
 	{
 		return [
@@ -95,7 +128,10 @@ class XC extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Contr
 		];
 	}
     
-    // возвращает параметры компонента очищенные от исходных значений (с ~)
+    /*
+    * возвращает параметры компонента очищенные от исходных значений (с ~)
+    * просту удаляет ключи с ~
+    */
     public function getParams ()
 	{
         if (!$this->_arParams_final) {
@@ -105,6 +141,7 @@ class XC extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Contr
                 $this->_arParams_final[$key] = $val;
             }
         }
+        
         return $this->_arParams_final;
     }
     
