@@ -55,9 +55,7 @@ APP.Util = {
     submitForm: function (form, callback) {
         let url = form.getAttribute('action');
 		let formData = new FormData(form);
-		let sendData = {};
-
-		
+        
 		var oReq = new XMLHttpRequest();
 		oReq.onload = function () {
 			callback(this.response);
@@ -65,6 +63,22 @@ APP.Util = {
 		
 		oReq.open('post', url);
 		oReq.send(formData);
+		
+		return false;
+    },
+    
+    sendObjectAsJSON: function (url, obj, callback) {
+		//let formData = new FormData();
+		let sendData =JSON.stringify(obj);
+		
+		var oReq = new XMLHttpRequest();
+		oReq.onload = function () {
+			callback(this.response);
+		};
+		
+		oReq.open('post', url);
+        oReq.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		oReq.send(sendData);
 		
 		return false;
     },
