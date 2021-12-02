@@ -86,6 +86,7 @@ class XC extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Contr
             $ajaxParams=false // любые параметры добавляемые js - будут переданы в ключе
         )
 	{
+        
         // востанавливает параметры
         $arParams = $this->extractValFromSignedVal($signedParams);
         if ($arParams == null) die('not params');
