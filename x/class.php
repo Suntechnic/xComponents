@@ -81,25 +81,33 @@ class XC extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Contr
     */
     public function executeAction (
             $signedParams, // подписанные параметры
-            $signedParamsMutation=false, // подписанные массив мутаций параметров (каждый ключ заменит аналогичный в Params)
-            $signedTemplate // подписанный шаблон
+            $signedParamsMutation=false, // подписанный массив мутаций параметров (каждый ключ заменит аналогичный в Params)
+            $signedTemplate, // подписанный шаблон
+            $ajaxParams=false // любые параметры добавляемые js - будут переданы в ключе
         )
 	{
+        
         // востанавливает параметры
         $arParams = $this->extractValFromSignedVal($signedParams);
         if ($arParams == null) die('not params');
         
-        if ($signedParamsMutation) { // если имеется патч параметров
+        // если имеется патч параметров
+        if ($signedParamsMutation) { 
             // востанавливает его
             $arParamsMutation = $this->extractValFromSignedVal($signedParamsMutation);
             if ($arParamsMutation != null) {
-                // и применяет к массив праметров
+                // и применяет к массиву праметров
                 foreach ($arParamsMutation as $key=>$val) {
                     $arParams[$key] = $val;
                 }
             } else {
-                die();
+                die('invalid params mutation');
             }
+        }
+        
+        // если есть ajax параметры
+        if ($ajaxParams) {
+            $arParams['AJAX_PARAMS'] = $ajaxParams;
         }
         
         // востанавливает шаблон
