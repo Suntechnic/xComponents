@@ -29,6 +29,10 @@ class XCJsApp extends XC
         
         $this->includeComponentTemplate();
         
+        if (is_array($this->arParams['EXTENSIONS'])) {
+            foreach ($this->arParams['EXTENSIONS'] as $ext) \Bitrix\Main\UI\Extension::load($ext);
+        }
+        
         if (is_array($this->arParams['SCRIPTS'])) {
             $asset = \Bitrix\Main\Page\Asset::getInstance();
             foreach ($this->arParams['SCRIPTS'] as $script) $asset->addJS($script);
