@@ -52,7 +52,7 @@ APP.Util = {
         document.cookie = updatedCookie;
     },
     
-    submitForm: function (form, callback) {
+    sendForm: function (form, callback) {
         let url = form.getAttribute('action');
 		let formData = new FormData(form);
         
