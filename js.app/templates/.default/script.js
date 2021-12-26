@@ -81,59 +81,5 @@ APP.Util = {
 		oReq.send(sendData);
 		
 		return false;
-    },
-    
-    maskingInput: function (input, pattern, mask) {
-
-        var placeholder = input.getAttribute('placeholder');
-        mask = mask || '';
-        
-        pattern = new RegExp(pattern);
-        
-        if (pattern.test(placeholder)) {
-            
-            var proc = function (value) {
-                var newValue = value;
-                var l = newValue.length;
-                
-                for ( i = l; i >= 0; i--) {
-                    testValue = newValue + placeholder.substr(newValue.length);
-                    if (pattern.test(testValue)) {
-                        break;
-                    } else {
-                        newValue = newValue.substr(0, newValue.length-1);
-                    }
-                }
-                
-                
-                while (newValue.length < mask.length && mask.substr(newValue.length,1) != '_') {
-                    newValue = newValue+mask.substr(newValue.length,1);
-                }
-                
-                return newValue;
-            }
-            
-            if (mask.length) input.value = proc('');
-            
-            input.addEventListener('keyup', function(e) {
-                
-                switch (e.keyCode) { // allows navigating thru input
-                    case 8: //backspace
-                    case 20: // caplocks
-                    case 17: // control
-                    case 18: // option
-                    case 16: // shift
-                    case 37: // arrow keys
-                    case 38:
-                    case 39:
-                    case 40:
-                    case  9: // tab (let blur handle tab)
-                        return;
-                }
-                
-                input.value = proc(input.value);
-                
-            }, false);
-        }
     }
 }
