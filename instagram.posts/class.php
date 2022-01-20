@@ -15,6 +15,9 @@ class XCInstagramPosts extends XC
 	{
         $arParams = parent::onPrepareComponentParams($arParams);
         
+        $arParams['ELEMENTS_COUNT'] = intval($arParams['ELEMENTS_COUNT']);
+        if (!$arParams['ELEMENTS_COUNT']) $arParams['ELEMENTS_COUNT'] = 8;
+        
         
         return $arParams;
     }
@@ -82,7 +85,8 @@ class XCInstagramPosts extends XC
             }
           
             // Получаем ленту
-            $url = "https://graph.instagram.com/me/media?fields=id,media_type,media_url,caption,timestamp,thumbnail_url,permalink,children{fields=id,media_url,thumbnail_url,permalink}&limit=50&access_token=" . $accessToken;
+            
+            $url = 'https://graph.instagram.com/me/media?fields=id,media_type,media_url,caption,timestamp,thumbnail_url,permalink,children{fields=id,media_url,thumbnail_url,permalink}&limit='.$this->arParams['ELEMENTS_COUNT'].'&access_token=' . $accessToken;
             $instagramCnct = curl_init(); // инициализация cURL подключения
             curl_setopt($instagramCnct, CURLOPT_URL, $url); // подключаемся
             curl_setopt($instagramCnct, CURLOPT_RETURNTRANSFER, 1); // просим вернуть результат
@@ -91,22 +95,25 @@ class XCInstagramPosts extends XC
           
             $instaFeed = array();
             foreach ($media->data as $mediaObj) {
-                
-                $instaFeed[$mediaObj->id]['img'] = $mediaObj->thumbnail_url ?: $mediaObj->media_url;
-                $instaFeed[$mediaObj->id]['link'] = $mediaObj->permalink;
-                $instaFeed[$mediaObj->id]['caption'] = $mediaObj->caption;
-                $instaFeed[$mediaObj->id]['media_type'] = $mediaObj->media_type;
-                $instaFeed[$mediaObj->id]['timestamp'] = $mediaObj->timestamp;
+                $dctItem['ID'] = $mediaObj->id;
+                $dctItem['IMG'] = $mediaObj->thumbnail_url ?: $mediaObj->media_url;
+                $dctItem['LINK'] = $mediaObj->permalink;
+                $dctItem['CAPTION'] = $mediaObj->caption;
+                $dctItem['MEDIA_TYPE'] = $mediaObj->media_type;
+                $dctItem['TIMESTAMP'] = $mediaObj->timestamp;
                 
                 if (!empty($mediaObj->children->data)) {
                     foreach ($mediaObj->children->data as $children) {
-                        $instaFeed[$mediaObj->id]['children'][$children->id]['img'] = $children->thumbnail_url ?: $children->media_url;
-                        $instaFeed[$mediaObj->id]['children'][$children->id]['link'] = $children->permalink;
+                        $dctItem['CHILDREN'][$children->id]['IMG'] = $children->thumbnail_url ?: $children->media_url;
+                        $dctItem['CHILDREN'][$children->id]['LINK'] = $children->permalink;
                     }
                 }
+                
+                $instaFeed[] = $dctItem;
             }
+            
+            $this->arResult['ITEMS'] = $instaFeed;
         }
-        
         
         if($this->startResultCache(
                 false
