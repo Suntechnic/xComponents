@@ -153,4 +153,26 @@ class XC extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Contr
         return $this->_arParams_final;
     }
     
+    
+    /*
+    * сохраняет параметры
+    */
+    public function getOption ($name)
+	{
+        return \Bitrix\Main\Config\Option::get(
+                str_replace(':','__',$this->__name),
+                $name,
+                null,
+                SITE_ID
+            );
+    }
+    public function setOption ($name,$value)
+	{
+        return \Bitrix\Main\Config\Option::set(
+                str_replace(':','__',$this->__name),
+                $name,
+                $value,
+                SITE_ID
+            );
+    }
 }
