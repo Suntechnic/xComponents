@@ -25,6 +25,10 @@ APP.env = {
 
 APP.Util = {
     
+    cloneObject: function (o) {
+        return JSON.parse(JSON.stringify(o));
+    },
+    
     setCookie: function (name, value, options = {}) {
         //setCookie('user', 'John', {secure: true, 'max-age': 3600});
         if ('undefined' != typeof APP.config.cookie_name
