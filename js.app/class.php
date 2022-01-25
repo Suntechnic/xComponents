@@ -29,8 +29,9 @@ class XCJsApp extends XC
         
         $this->includeComponentTemplate();
         
-        if (is_array($this->arParams['EXTENSIONS'])) {
-            foreach ($this->arParams['EXTENSIONS'] as $ext) \Bitrix\Main\UI\Extension::load($ext);
+        if ($this->arParams['EXTENSIONS']) {
+            //\Bitrix\Main\UI\Extension::load($this->arParams['EXTENSIONS']);
+            \CJSCore::Init($this->arParams['EXTENSIONS']);
         }
         
         if (is_array($this->arParams['SCRIPTS'])) {
