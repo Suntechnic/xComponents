@@ -12,6 +12,7 @@ class XCJsApp extends XC
 	{
         $arParams = parent::onPrepareComponentParams($arParams);
         if (!is_array($arParams['CONFIG'])) $arParams['CONFIG'] = [];
+        if (!is_array($arParams['STATE'])) $arParams['STATE'] = [];
         return $arParams;
     }
     
@@ -26,6 +27,9 @@ class XCJsApp extends XC
         }
         
         $this->arResult['CONFIG'] = $dctConfig;
+        
+        $dctState = $this->arParams['STATE'];
+        $this->arResult['STATE'] = $dctState;
         
         $this->includeComponentTemplate();
         
