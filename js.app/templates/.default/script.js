@@ -87,3 +87,4 @@ APP.Util = {
 		return false;
     }
 }
+

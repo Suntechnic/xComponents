@@ -136,6 +136,16 @@ class XC extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Contr
 		];
 	}
     
+    public function executeComponent ()
+	{
+        
+        if($this->startResultCache(
+                false
+            )) {
+            $this->includeComponentTemplate();
+        }
+	}
+    
     /*
     * возвращает параметры компонента очищенные от исходных значений (с ~)
     * просту удаляет ключи с ~

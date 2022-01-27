@@ -12,4 +12,4 @@
 /** @var CBitrixComponent $component */
 $this->setFrameMode(true);
 ?>
-<script>var APP = {config:<?=\Bitrix\Main\Web\Json::encode($arResult['CONFIG'])?>,state:<?=\Bitrix\Main\Web\Json::encode($arResult['STATE'])?>};</script>
+<script type="application/x-javascript" data-skip-moving="true">var APP = {config:<?=\Bitrix\Main\Web\Json::encode($arResult['CONFIG'])?>,state:<?=\Bitrix\Main\Web\Json::encode($arResult['STATE'])?>};</script>
