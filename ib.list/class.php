@@ -54,6 +54,7 @@ class XCIbList extends XC
         
         if ($this->arParams['IBLOCK_ID']) $arFilter["IBLOCK_ID"] = $this->arParams["IBLOCK_ID"];
         if ($this->arParams['SECTION_ID']) $arFilter['SECTION_ID'] = $this->arParams['SECTION_ID'];
+        if ($this->arParams['SECTION_CODE']) $arFilter['SECTION_CODE'] = $this->arParams['SECTION_CODE'];
         
         return $arFilter;
     }
@@ -96,19 +97,30 @@ class XCIbList extends XC
                 return;
             }
             
-            
+            // добавление информации об ИБ
             if ($this->arParams['IBLOCK_ID']) {
                 $rsIBlock = \CIBlock::GetList(array(), array(
-                        "ACTIVE" => "Y",
-                        "ID" => $this->arParams["IBLOCK_ID"],
+                        'ACTIVE' => 'Y',
+                        'ID' => $this->arParams['IBLOCK_ID'],
                     ));
                 $this->arResult['IBLOCK'] = $rsIBlock->GetNext();
             }
             
-            
-            if ($this->arParams['SECTION_ID']) {
-                //TODO: добавить получение данных о разделе
-                $this->arResult['SECTION'] = 'не реализовано';
+            // добавление информации об разделе
+            if ($this->arParams['SECTION_ID'] || $this->arParams['SECTION_CODE']) {
+                # http://dev.1c-bitrix.ru/api_help/iblock/classes/ciblocksection/getlist.php
+                $arSectionFilter = [
+                        'ACTIVE'=>'Y'
+                    ];
+                if ($this->arParams['IBLOCK_ID']) $arSectionFilter['IBLOCK_ID'] = $this->arParams['IBLOCK_ID'];
+                if ($this->arParams['SECTION_ID']) $arSectionFilter['ID'] = $this->arParams['SECTION_ID'];
+                if ($this->arParams['SECTION_CODE']) $arSectionFilter['CODE'] = $this->arParams['SECTION_CODE'];
+                
+                $rsSection = CIBlockSection::GetList(
+                        [],
+                        $arFilter
+                    );
+                $this->arResult['SECTION'] = $rsSection->fetch();
             }
             
             
