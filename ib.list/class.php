@@ -118,7 +118,7 @@ class XCIbList extends XC
                 
                 $rsSection = CIBlockSection::GetList(
                         [],
-                        $arFilter
+                       	$arSectionFilter
                     );
                 $this->arResult['SECTION'] = $rsSection->fetch();
             }
