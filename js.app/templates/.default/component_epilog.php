@@ -1,5 +1,5 @@
 <?if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
-
+return;
 // пример регистрации \bitrix\modules\main\jscore.php
 $pathLibs = $templateFolder.'/libs';
 $lstJSLibsConfig = array(
