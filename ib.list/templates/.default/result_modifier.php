@@ -40,3 +40,15 @@ while($arElement = $db_res->GetNext()) {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // примененный фильтр можн ополучить из $arResult['FILTER']
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SEO
+//$ipropSectionValues = new \Bitrix\Iblock\InheritedProperty\ElementValues($arResult['ITEM']['IBLOCK_ID'], $arResult['ITEM']['ID']);
+//$arResult['ITEM']['SEO'] = $ipropSectionValues->getValues();
+if ($arResult['SECTION']['ID']) {
+    $ipropSectionValues = new \Bitrix\Iblock\InheritedProperty\SectionValues($arResult['SECTION']['IBLOCK_ID'], $arResult['SECTION']['ID']);
+    $arResult['SECTION']['SEO'] = $ipropSectionValues->getValues();
+}
