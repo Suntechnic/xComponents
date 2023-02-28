@@ -8,7 +8,7 @@
  */
 class XCJsApp extends XC
 {
-    public function onPrepareComponentParams(&$arParams)
+    public function onPrepareComponentParams($arParams)
 	{
         $arParams = parent::onPrepareComponentParams($arParams);
         if (!is_array($arParams['CONFIG'])) $arParams['CONFIG'] = [];

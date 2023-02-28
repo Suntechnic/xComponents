@@ -11,7 +11,7 @@ class XCIbList extends XC
     
     private $signer;
     
-    public function onPrepareComponentParams(&$arParams)
+    public function onPrepareComponentParams($arParams)
 	{
         $arParams = parent::onPrepareComponentParams($arParams);
         

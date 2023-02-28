@@ -15,7 +15,7 @@ class XC extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Contr
     public function getSalt ()
 	{
         $strName = str_replace([':','.'],'_',$this->__name);
-        if (defined(XDEFINE_SALT)) return $strName.'_'.XDEFINE_SALT;
+        if (defined('XDEFINE_SALT')) return $strName.'_'.XDEFINE_SALT;
         return $strName;
     }
     
@@ -32,7 +32,7 @@ class XC extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Contr
      * Подготавливает параметры компонента добавляя обязательные недостающие
      * 
     */
-    public function onPrepareComponentParams(&$arParams)
+    public function onPrepareComponentParams ($arParams)
 	{
         if(!isset($arParams["CACHE_TIME"])) $arParams["CACHE_TIME"] = 36000000;
         if (!$arParams['UID']) $arParams['UID'] = $this->getUid();
