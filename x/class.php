@@ -34,10 +34,27 @@ class XC extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Contr
     */
     public function onPrepareComponentParams ($arParams)
 	{
-        if(!isset($arParams["CACHE_TIME"])) $arParams["CACHE_TIME"] = 36000000;
+        if(!isset($arParams['CACHE_TIME'])) $arParams['CACHE_TIME'] = 86399;
         if (!$arParams['UID']) $arParams['UID'] = $this->getUid();
         if (!$arParams['LANGUAGE_ID']) $arParams['LANGUAGE_ID'] = LANGUAGE_ID;
         //if (!$arParams['SITE_ID']) $arParams['SITE_ID'] = SITE_ID;
+
+        if (!$arParams['DEBUG']) { // еcли DEBUG не стоит извне
+            $DebugParam = \Bitrix\Main\Application::getInstance()->getContext()->getRequest()->get('debug');
+            if (
+                    $DebugParam // дебаг установлен
+                    && defined('APPLICATION_ENV') // и установлено окружени
+                    && APPLICATION_ENV != 'production' // и это не продакшен
+                ) {
+                global $USER;
+                if ($USER->isAdmin()) { // и пользователей админ
+                    $arParams['CACHE_TYPE'] = 'N';
+                    $arParams['CACHE_TIME'] = 0;
+                    $arParams['DEBUG'] = $DebugParam;
+                }
+            }
+            
+        }
         return $arParams;
     }
     
@@ -142,25 +159,38 @@ class XC extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Contr
         if($this->startResultCache(
                 false
             )) {
+            $this->arResult = $this->arParams;
             $this->includeComponentTemplate();
         }
 	}
     
     /*
     * возвращает параметры компонента очищенные от исходных значений (с ~)
-    * просту удаляет ключи с ~
+    * просто удаляя ключи с ~
+    * либо оригинальные параметры, если $Origin==true
     */
-    public function getParams ()
+    private $_arParams_final;
+    private $_arParams_origin;
+    public function getParams (bool $Origin=false)
 	{
+
         if (!$this->_arParams_final) {
             $this->_arParams_final = [];
+            $this->_arParams_origin = [];
             foreach ($this->arParams as $key=>$val) {
-                if ('~' == substr($key,0,1)) continue;
-                $this->_arParams_final[$key] = $val;
+                if ('~' == substr($key,0,1)) {
+                    $this->_arParams_origin[substr($key,1)] = $val;
+                } else {
+                    $this->_arParams_final[$key] = $val;
+                }
             }
         }
-        
-        return $this->_arParams_final;
+
+        if ($Origin) {
+            return $this->_arParams_origin;
+        } else {
+            return $this->_arParams_final;
+        }
     }
     
     
