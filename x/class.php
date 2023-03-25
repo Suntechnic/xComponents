@@ -166,12 +166,11 @@ class XC extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Contr
     
     /*
     * возвращает параметры компонента очищенные от исходных значений (с ~)
-    * просто удаляя ключи с ~
-    * либо оригинальные параметры, если $Origin==true
+    * либо оригинальные, не зажоплинные параметры, если $Origin==true
     */
     private $_arParams_final;
     private $_arParams_origin;
-    public function getParams (bool $Origin=false)
+    public function getParams (bool $Origin=false): array
 	{
 
         if (!$this->_arParams_final) {
