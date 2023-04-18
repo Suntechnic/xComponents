@@ -214,4 +214,78 @@ class XC extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Contr
                 SITE_ID
             );
     }
+
+
+
+    /*
+    * получает на вход массив битрикс-засранных массивов
+    * и удаляет из них срань
+    * например $arResult['ITEMS'] = \XC::cleanArrays($arResult['ITEMS']);
+    * или $arResult['ITEMS'] = \XC::cleanArrays($arResult['ITEMS'],\XC::DIRTING_PREFIXES, \XC::DIRTING_POSTFIXES);
+    * сохраянет ключи
+    */
+    const DIRTING_PREFIXES = ['~'];
+    const DIRTING_POSTFIXES = ['_VALUE_ID','_ENUM_ID'];
+    public static function cleanArrays (
+            array $refArDirty, 
+            array $lstPrefix = ['~'], // список грязных префиксов
+            array $lstPostfix = [] // список грязных постфиксов
+        ): array
+	{
+        $refArCleaned = [];
+
+        $lener = function ($s) {
+            return strlen($s);
+        };
+
+        if (count($lstPrefix)) {
+            $refPrefix = array_combine($lstPrefix, array_map($lener,$lstPrefix));
+        } else $refPrefix = [];
+
+        if (count($lstPostfix)) {
+            $refPostfix = array_combine($lstPostfix, array_map($lener,$lstPostfix));
+        } else $refPostfix = [];
+
+
+        foreach ($refArDirty as $Key=>$arVal) {
+            if (is_array($arVal)) {
+                $refArCleaned[$Key] = self::cleanArrayByRef($arVal,$refPrefix,$refPostfix);
+            } else {
+                $refArCleaned[$Key] = $arVal;
+            }
+        }
+        
+        return $refArCleaned;
+    }
+    public static function cleanArray (
+            array $arDirty, 
+            array $lstPrefix = ['~'], // список грязных префиксов
+            array $lstPostfix = [] // список грязных постфиксов
+        ): array
+    {
+        return self::cleanArrays([$arDirty],$lstPrefix,$lstPostfix)[0];
+    }
+
+    private static function cleanArrayByRef (
+            array $arDirty, 
+            array $refPrefix, // справочник префикс=>длина
+            array $refPostfix // справочник постфикс=>длина
+        ): array
+    {
+        $arCleaned = [];
+
+        $arCleaned = array_filter($arDirty, function ($Key) use ($refPrefix,$refPostfix) {
+                foreach ($refPrefix as $Prefix => $Len) {
+                    if ($Prefix == substr($Key,0,$Len)) return false;
+                }
+                foreach ($refPostfix as $Postfix => $Len) {
+                    if ($Postfix == substr($Key,$Len*-1)) return false;
+                }
+                return true;
+            }, ARRAY_FILTER_USE_KEY);
+        
+        return $arCleaned;
+    }
+
+
 }
