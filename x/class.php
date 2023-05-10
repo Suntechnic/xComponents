@@ -159,8 +159,10 @@ class XC extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Contr
         if($this->startResultCache(
                 false
             )) {
-            $this->arResult = $this->arParams;
+            $this->arResult = $this->getParams(true);
             $this->includeComponentTemplate();
+        } else {
+
         }
 	}
     
@@ -176,14 +178,25 @@ class XC extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Contr
         if (!$this->_arParams_final) {
             $this->_arParams_final = [];
             $this->_arParams_origin = [];
-            foreach ($this->arParams as $key=>$val) {
-                if ('~' == substr($key,0,1)) {
-                    $this->_arParams_origin[substr($key,1)] = $val;
+            foreach ($this->arParams as $Key=>$Val) {
+                if ('~' == substr($Key,0,1)) {
+                    $this->_arParams_origin[substr($Key,1)] = $Val;
                 } else {
-                    $this->_arParams_final[$key] = $val;
+                    $this->_arParams_final[$Key] = $Val;
                 }
             }
+
+            // параметры при ajax запросе могут быть не засраны,
+            // тогда нужно это учесть и перенести в _arParams_origin ключи из _arParams_final
+            if (count($this->_arParams_final) > count($this->_arParams_origin)) {
+                foreach ($this->_arParams_final as $Key=>$Val) {
+                    if (!array_key_exists($Key,$this->_arParams_origin)) $this->_arParams_origin[$Key] = $Val;
+                }
+            }
+            
         }
+
+        //\Kint::dump($this->arParams, $this->_arParams_origin,$this->_arParams_final); die();
 
         if ($Origin) {
             return $this->_arParams_origin;
