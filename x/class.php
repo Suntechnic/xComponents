@@ -153,9 +153,15 @@ class XC extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Contr
 		];
 	}
     
+    public $arParamsTemplate;
     public function executeComponent ()
 	{
+        // добавляем $arParamsTemplate
+        if ($this->arParams['TEMPLATE'] && is_array($this->arParams['TEMPLATE'])) {
+            $this->arParamsTemplate = $this->arParams['TEMPLATE'];
+        } else $this->arParamsTemplate = [];
         
+
         if($this->startResultCache(
                 false
             )) {
