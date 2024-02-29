@@ -207,7 +207,7 @@ class XC extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Contr
     
     
     /*
-    * сохраняет параметры
+    * функции работы с параметрами компонентов сохраняемыми в БД
     */
     public function getOption ($name)
 	{
