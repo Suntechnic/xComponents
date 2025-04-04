@@ -85,7 +85,7 @@ class XC extends \CBitrixComponent implements \Bitrix\Main\Engine\Contract\Contr
         $debrisSignedVal = explode('.',$signedVal);
         if (!$this->signer) $this->initSigner();
         if ($this->signer->validate($debrisSignedVal[0], $debrisSignedVal[1], $this->getSalt())) {
-            return unserialize(base64_decode($debrisSignedVal[0]));
+            return unserialize(base64_decode($debrisSignedVal[0]), ['allowed_classes' => false]);
         } else {
             return null;
         }
